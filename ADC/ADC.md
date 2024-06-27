@@ -1,4 +1,5 @@
 **本人只提供idf编程方法，不提供知识点注解**
+
 @ 
 
 # ADC
@@ -26,7 +27,7 @@ REQUIRES esp_adc
 
 ## ADC设置
 
-###初始化ADC连续转换模式驱动
+### 初始化ADC连续转换模式驱动
 
 ***ADC 连续转换模式驱动基于 ESP32 SAR ADC 模块实现，不同的 ESP 目标芯片可能拥有不同数量的独立 ADC***
 1. 配置分配资源结构体 **ADC驱动**
@@ -77,7 +78,8 @@ adc_continuous_config_t esp_adc_cfg = {
 };
 
 /*
-对于 IO 对应的 ADC 通道号，请参阅 技术参考手册 获取 ADC IO 管脚的详细信息。另外，可以使用 adc_continuous_io_to_channel() 和 adc_continuous_channel_to_io() 获取 ADC 通道和 ADC IO 的对应关系。
+对于 IO 对应的 ADC 通道号，请参阅 技术参考手册 获取 ADC IO 管脚的详细信息。另外，可以使用 adc_continuous_io_to_channel() 和
+adc_continuous_channel_to_io() 获取 ADC 通道和 ADC IO 的对应关系。
 */
 
 adc_continous_config(&esp_adc_cfg);
