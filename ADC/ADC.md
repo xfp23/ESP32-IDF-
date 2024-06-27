@@ -1,8 +1,12 @@
 **本人只提供idf编程方法，不提供知识点注解**
 
-@ 
+# 版权信息
 
-# ADC
+© 2024 [xfp23]. 未经许可不得复制、修改或分发。
+此文献为 GitHub 作者 **xfp23** 所有。
+
+
+# ESP32ADC使用指南
 
 - ESP32 芯片集成了模数转换器 (ADC)，支持测量特定模拟 IO 管脚的模拟信号。此外，ADC 还支持直接内存访问 (DMA) 功能，高效获取 ADC 转换结果。
 - ESP32 具有 两 个 ADC 单元，可应用于以下场景：
@@ -88,20 +92,6 @@ adc_continous_config(&esp_adc_cfg);
 2.上述结构的枚举类型：(**来自乐鑫官方**)
 
 ```c
-/*
- * SPDX-FileCopyrightText: 2020-2022 Espressif Systems (Shanghai) CO LTD
- *
- * SPDX-License-Identifier: Apache-2.0
- */
-#pragma once
-
-#include <stdbool.h>
-#include <stdint.h>
-#include "sdkconfig.h"
-#include "soc/soc_caps.h"
-#include "soc/clk_tree_defs.h"
-#include "esp_attr.h"
-
 /**
  * @brief ADC 单元
  */
