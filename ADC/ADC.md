@@ -178,12 +178,13 @@ typedef enum {
    ```
 
 2. **注册事件回调**
-1.调用 adc_continuous_register_event_callbacks()，可以将自己的函数链接到驱动程序的 ISR 中。
-2.通过 adc_continuous_evt_cbs_t 可查看所有支持的事件回调。
-3.adc_continuous_evt_cbs_t::on_conv_done：当一个转换帧完成时，触发此事件。
-4.adc_continuous_evt_cbs_t::on_pool_ovf：当内部缓冲池已满时，触发此事件，新的转换结果将丢失。
-5.由于上述回调函数在 ISR 中调用，请确保回调函数适合在 ISR 上下文中运行，且这些回调不应涉及阻塞逻辑。回调函数的原型在 adc_continuous_callback_t 中声明。
-6.在调用 adc_continuous_register_event_callbacks() 时，还可以通过参数 user_data 注册自己的上下文，该用户数据将直接传递给回调函数。
+
+1. 调用 adc_continuous_register_event_callbacks()，可以将自己的函数链接到驱动程序的 ISR 中。
+2. 通过 adc_continuous_evt_cbs_t 可查看所有支持的事件回调。
+3. adc_continuous_evt_cbs_t::on_conv_done：当一个转换帧完成时，触发此事件。
+4. adc_continuous_evt_cbs_t::on_pool_ovf：当内部缓冲池已满时，触发此事件，新的转换结果将丢失。
+5. 由于上述回调函数在 ISR 中调用，请确保回调函数适合在 ISR 上下文中运行，且这些回调不应涉及阻塞逻辑。回调函数的原型在 adc_continuous_callback_t 中声明。
+6. 在调用 adc_continuous_register_event_callbacks() 时，还可以通过参数 user_data 注册自己的上下文，该用户数据将直接传递给回调函数。
 
  ```c
 // 回调函数，用于处理转换完成事件
