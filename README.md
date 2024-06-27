@@ -2,11 +2,12 @@
 
 **这是我的esp-idf整理的相关文献**
 
-# 项目配置
 
 ## GPIO
 
 ## ADC
+
+[ADC官方库使用方法](/ADC/ADC.md)
 
 ## UART
 
