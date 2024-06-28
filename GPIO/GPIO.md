@@ -22,6 +22,7 @@
 #define GPIO_OUTPUT_IN_SEL ((1ULL << GPIO_NUM_0) | (1ULL) << GPIO_NUM_1)
 #define LED0 GPIO_NUM_0
 #define LED GPIO_NUM_1
+
 ```
 
 1.对下面结构进行配置
