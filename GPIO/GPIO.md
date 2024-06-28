@@ -175,4 +175,4 @@ typedef enum {
 ```
 
 ## GPIO控制的其他函数原型
-[其他gpio控制函数](GPIO/gpio.h)
+[其他gpio控制函数](gpio.h)
