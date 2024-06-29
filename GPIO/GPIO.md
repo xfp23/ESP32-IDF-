@@ -181,3 +181,5 @@ typedef enum {
 
 ## GPIO控制的其他函数原型
 [其他gpio控制函数](gpio.h)
+## 完整项目程序示例
+- [外部中断](gpio_isr.c)
