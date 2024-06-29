@@ -53,7 +53,7 @@ gpio_config_t
 1.输出高低电平
 ```c
  gpio_set_level(LED, 1);//输出高电平
- gpio_set_level(输出低电平);//输出低电平
+ gpio_set_level(LED, 0);//输出低电平
 ```
 2.延时函数
 ```c
