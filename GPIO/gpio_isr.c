@@ -2,6 +2,7 @@
 #include "freertos/task.h"
 #include "driver/gpio.h"
 #include "esp_log.h"
+#include "stdbool.h"
 
 #define LED GPIO_NUM_0
 #define KEY GPIO_NUM_1
@@ -12,8 +13,15 @@ static const char* TAG = "GPIO";
 void IRAM_ATTR gpio_isr_handler(void* arg)
 {
     uint32_t gpio_num = (uint32_t) arg;
+    static bool flag = false;
+    flag = !flag;
     // 切换LED状态
-    gpio_set_level(LED, !gpio_get_level(LED));
+    if(flag)
+    {
+    gpio_set_level(LED, 1);
+    } else {
+    	gpio_set_level(LED,0);
+    }
 }
 
 void init_gpio()
