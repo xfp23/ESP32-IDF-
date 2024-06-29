@@ -19,7 +19,7 @@
 2. cmake 配置
 
 ```c
- REQUIRES driver esp_adc
+ REQUIRES driver
 ```
 
 ## 配置引脚
