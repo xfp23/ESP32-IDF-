@@ -32,4 +32,4 @@ ESP_ERROR_CHECK(gptimer_new_timer(&timer_config, &gptimer));
 
 
 
-[定时器初级示例程序](RTC_example.c）
+- [定时器初级示例程序](RTC_example.c)
