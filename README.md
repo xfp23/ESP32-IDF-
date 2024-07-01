@@ -23,7 +23,7 @@
 - [MC PWM编程指南](/PWM/PWM2.md)
 
 ## UART
-- [UART编程指南]
+- [UART编程指南](/UART/UART.md)
 ## I2C
 
 - [I2C主机编程指南](/i2c/I2C.md)
