@@ -30,5 +30,6 @@ gptimer_config_t timer_config = {
 ESP_ERROR_CHECK(gptimer_new_timer(&timer_config, &gptimer));
 ```
 
-**官方是这么解释的:**
-1. 
+
+
+[定时器初级示例程序](RTC_example.c）
