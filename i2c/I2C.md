@@ -169,3 +169,6 @@ typedef struct {
 ## IIC其他函数原型
 
 [其他IIC API函数](i2c_function.h)
+
+## 应用示例项目
+[OLED12864显示](/OLED12864_4PIN/OLED12864_4PIN_example.c)
