@@ -14,14 +14,22 @@
 2. 生成连续 ADC 转换结果
 3. 此文档为连续转换
 
+- 在连续转换模式下，ADC会持续进行转换，每次转换完成后立即开始下一次转换。这种模式下，ADC不会自动停止，除非显式地中止转换。
+连续转换适合需要持续监测并实时获取数据的应用，例如音频采集、数据记录或者实时控制系统。
+区别总结：
+触发方式：单次转换模式需要显式触发每次转换，而连续转换模式在启动后会自动持续转换。
+功耗：单次转换模式相对于连续转换模式能够节省能量，因为它只在需要时才进行转换。
+应用场景：根据应用的实时性需求和能耗要求选择合适的模式
+
 # 编程实现
 
 ## 环境配置
 1.包含的头文件：
 
 ```c
-#include "hal/adc_types.h"
-#include "esp_adc/adc_oneshot.h"
+#include "esp_adc/adc_continuous.h"
+
+
 ```
 2.cmake配置：
 
@@ -86,8 +94,12 @@ adc_continuous_config_t esp_adc_cfg = {
 adc_continuous_channel_to_io() 获取 ADC 通道和 ADC IO 的对应关系。
 */
 
+
+
 adc_continous_config(&esp_adc_cfg);
 ```
+- ADC通道对应IO请查看技术手册
+[查询通道对应引脚](/PDF/PDF.md)
 
 2.上述结构的枚举类型：(**来自乐鑫官方**)
 
@@ -171,6 +183,10 @@ typedef enum {
 
 1. **启动和停止**
    ```c
+   /**
+    * @brief 启动ADC
+    * @param 连续转换模式驱动
+    */
    adc_continuous_start();//启动ADC
    adc_continuous_stop();//停止ADC
 
@@ -227,3 +243,6 @@ void adc_pool_ovf_callback(adc_continuous_handle_t handle, const adc_event_data_
         return;
     }
 ```
+
+## 函数原型
+- [上述函数原型](/ADC/ADC_Functions.c)

@@ -5,7 +5,7 @@
 © 2024 . 未经许可不得复制、修改或分发。 此文献为 [小風的藏書閣](https://t.me/xfp2333) 所有。
 
 # 模数转换器 (ADC) 单次转换模式驱动
-- ESP32 有 两 个 ADC 单元，可以在以下场景使用：
+- ESP32有两个 ADC 单元，可以在以下场景使用：
 
 1. 生成 ADC 单次转换结果
 
@@ -21,12 +21,6 @@
 单次转换适合于需要在特定时间点测量并获取数据的应用场景，例如定时测量传感器数据或者事件驱动的数据采集。
 连续转换模式：
 
-- 在连续转换模式下，ADC会持续进行转换，每次转换完成后立即开始下一次转换。这种模式下，ADC不会自动停止，除非显式地中止转换。
-连续转换适合需要持续监测并实时获取数据的应用，例如音频采集、数据记录或者实时控制系统。
-区别总结：
-触发方式：单次转换模式需要显式触发每次转换，而连续转换模式在启动后会自动持续转换。
-功耗：单次转换模式相对于连续转换模式能够节省能量，因为它只在需要时才进行转换。
-应用场景：根据应用的实时性需求和能耗要求选择合适的模式
 
 # 编程实现
 
@@ -216,6 +210,68 @@ typedef enum {
 
 ```
 
+## 上述部分函数原型
+
+```c
+/**
+ * @brief 配置单次ADC读取的通道
+ *
+ * @param[in] handle      ADC句柄
+ * @param[in] channel     ADC通道号
+ * @param[in] config      ADC通道的配置结构体
+ *
+ * @return
+ *     - ESP_OK: 成功
+ *     - 其他: 发生错误
+ */
+esp_err_t adc_oneshot_config_channel(adc_oneshot_handle_t handle, adc_channel_t channel, const adc_oneshot_config_t *config);
+
+
+/**
+ * @brief 读取指定通道的单次ADC转换结果
+ *
+ * @param[in] handle      ADC句柄
+ * @param[in] channel     ADC通道号
+ * @param[out] out_raw    指向存储ADC转换结果的指针
+ *
+ * @return
+ *     - ESP_OK: 成功
+ *     - 其他: 发生错误
+ */
+esp_err_t adc_oneshot_read(adc_oneshot_handle_t handle, adc_channel_t channel, int *out_raw);
+
+/**
+ * @brief 检查并处理错误码
+ *
+ * @param[in] expr        表达式，通常是函数调用
+ *
+ * @note 如果表达式返回值不为ESP_OK，会打印错误信息并中止程序
+ */
+#define ESP_ERROR_CHECK(expr) do {                                         \
+        esp_err_t err_rc_ = (expr);                                        \
+        if (err_rc_ != ESP_OK) {                                           \
+            ESP_LOGE(TAG, "ESP_ERROR_CHECK failed: esp_err_t 0x%x at %s:%d", \
+                     err_rc_, __FILE__, __LINE__);                         \
+            abort();                                                       \
+        }                                                                  \
+    } while(0)
+
+
+/**
+ * @brief 打印信息日志
+ *
+ * @param[in] tag         日志标签，用于标识日志所属模块
+ * @param[in] format      格式字符串，类似printf
+ * @param[in] ...         格式化参数
+ */
+#define ESP_LOGI(tag, format, ...) esp_log_write(ESP_LOG_INFO, tag, format, ##__VA_ARGS__)
+
+
+
+```
 ## 单次转换使用示例
 
 [ADC单次转换示例](ADC0_example.c)
+
+- 若想了解**ADC连续转换**,请查看如下指南
+[ADC连续转换](ADC.md)
