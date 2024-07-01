@@ -16,7 +16,7 @@
 - [ADC单次转换编程指南](/ADC/ADC0.md)
 
 ## RTC
-[通用定时器编程指南](/RTC/RTC.MD)
+- [通用定时器编程指南](/RTC/RTC.MD)
 
 ## PWM
 - [LED PWM编程指南](/PWM/PWM.md)
