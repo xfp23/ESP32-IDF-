@@ -8,6 +8,8 @@
 **IIC分为主机和从机模式**
 
  - 此文档为主机模式，若要参考从机模式，请跳转 [IIC 从机模式](/i2c/I2C0.md)
+ - ESP32 I2C 端口可配置，一般支持两路I2C的使用
+ - I2C的时钟频率可选，有100khz和400khz
 
 # 编程实现
 
@@ -17,6 +19,7 @@
 
 ```c
 #include "driver/i2c.h"
+#include "sdkconfig.h"
 ```
 
 2.cmake配置
@@ -27,17 +30,20 @@ REQUIRES  driver
 
 ## 初始化
 
+1. 配置驱动程序
+
 ```c
 {
     int i2c_master_port = I2C_MASTER_NUM;//I2C总线号
 
     i2c_config_t conf = {
-        .mode = I2C_MODE_MASTER,
+        .mode = I2C_MODE_MASTER,        //仅限主机模式
         .sda_io_num = I2C_MASTER_SDA_IO,
         .scl_io_num = I2C_MASTER_SCL_IO,
-        .sda_pullup_en = GPIO_PULLUP_ENABLE,
+        .sda_pullup_en = GPIO_PULLUP_ENABLE,//启用上拉电阻
         .scl_pullup_en = GPIO_PULLUP_ENABLE,
         .master.clk_speed = I2C_MASTER_FREQ_HZ,//时钟频率，有100k和400k可选
+        .clk_flags = 0,                       //可选项，可以使用I2C_SCLK_SRC_FLAG_* 标志选择I2C时钟源
     };
 
     i2c_param_config(i2c_master_port, &conf);//配置i2c总线
@@ -54,7 +60,7 @@ REQUIRES  driver
  *
  * @param i2c_num I2C端口号
  * @param dev_addr 设备地址
- * @param data 发送的数据缓冲区
+ * @param data 发送的数据缓冲区 可以是数组
  * @param size 发送的数据长度（字节数）
  * @param ticks_to_wait 等待传输完成的最长时间（以时钟节拍为单位）#define I2C_MASTER_TIMEOUT 1000 / portTICK_PERIOD_MS
  *
@@ -66,6 +72,8 @@ REQUIRES  driver
  *     - ESP_ERR_TIMEOUT I2C主机超时
  */
 esp_err_t i2c_master_write_to_device(i2c_port_t i2c_num, uint8_t dev_addr, uint8_t *data, size_t size, TickType_t ticks_to_wait);
+//调用示例：
+          i2c_master_write_to_device(I2C_MASTER_NUM, MPU9250_SENSOR_ADDR, write_buf, sizeof(write_buf), I2C_MASTER_TIMEOUT_MS / portTICK_PERIOD_MS);
 ```
 ## 向总线读数据
 
@@ -86,90 +94,26 @@ esp_err_t i2c_master_write_to_device(i2c_port_t i2c_num, uint8_t dev_addr, uint8
  */
 esp_err_t i2c_master_read(i2c_cmd_handle_t cmd_handle, uint8_t *data, size_t data_len, i2c_ack_type_t ack);
 
+//使用示例：
+#define ACK_VAL 0x0                             /*!< I2C ack value */
+#define NACK_VAL 0x1  ·                          /*!< I2C nack value */
+i2c_cmd_handle_t cmd = i2c_cmd_link_create();
+i2c_master_start(cmd);
+//最后一个参数ACK信号，如果读取到的数据长度大于1 ,表示读取到了有效值，那么就发送低电平(0x00)表示读取到了信号，反之发送高电平0x01表示有误
+ i2c_master_read(cmd, data_rd, size - 1, ACK_VAL);
 ```
 
-## 上述类型定义
-```c
-/**
- * @brief I2C 端口号，可以是 I2C_NUM_0 ~ (I2C_NUM_MAX-1)。
- */
-typedef enum {
-    I2C_NUM_0 = 0,              /*!< I2C 端口 0 */
-#if SOC_I2C_NUM >= 2
-    I2C_NUM_1,                  /*!< I2C 端口 1 */
-#endif /* SOC_I2C_NUM >= 2 */
-#if SOC_LP_I2C_NUM >= 1
-    LP_I2C_NUM_0,               /*< LP_I2C 端口 0 */
-#endif /* SOC_LP_I2C_NUM >= 1 */
-    I2C_NUM_MAX,                /*!< 最大支持的 I2C 端口数 */
-} i2c_port_t;
-
-/**
- * @brief 用于计算 I2C 总线时序的数据结构。
- */
-typedef struct {
-    uint16_t clkm_div;          /*!< I2C 核心时钟分频器 */
-    uint16_t scl_low;           /*!< I2C SCL 低电平周期 */
-    uint16_t scl_high;          /*!< I2C SCL 高电平周期 */
-    uint16_t scl_wait_high;     /*!< I2C SCL 等待高电平周期 */
-    uint16_t sda_hold;          /*!< I2C SDA 保持时间 */
-    uint16_t sda_sample;        /*!< I2C SDA 采样时间 */
-    uint16_t setup;             /*!< I2C 启动和停止条件设置周期 */
-    uint16_t hold;              /*!< I2C 启动和停止条件保持周期 */
-    uint16_t tout;              /*!< I2C 总线超时周期 */
-} i2c_hal_clk_config_t;
-
-typedef enum {
-#if SOC_I2C_SUPPORT_SLAVE
-    I2C_MODE_SLAVE = 0,   /*!< I2C 从模式 */
-#endif
-    I2C_MODE_MASTER,      /*!< I2C 主模式 */
-    I2C_MODE_MAX,
-} i2c_mode_t;
-
-typedef enum {
-    I2C_MASTER_WRITE = 0,   /*!< I2C 写数据 */
-    I2C_MASTER_READ,        /*!< I2C 读数据 */
-} i2c_rw_t;
-
-typedef enum {
-    I2C_DATA_MODE_MSB_FIRST = 0,  /*!< I2C 数据高位优先 */
-    I2C_DATA_MODE_LSB_FIRST = 1,  /*!< I2C 数据低位优先 */
-    I2C_DATA_MODE_MAX
-} i2c_trans_mode_t;
-
-typedef enum {
-    I2C_ADDR_BIT_7 = 0,    /*!< I2C 从模式下的 7 位地址 */
-    I2C_ADDR_BIT_10,       /*!< I2C 从模式下的 10 位地址 */
-    I2C_ADDR_BIT_MAX,
-} i2c_addr_mode_t;
-
-typedef enum {
-    I2C_MASTER_ACK = 0x0,        /*!< I2C 每个字节读取时的应答 */
-    I2C_MASTER_NACK = 0x1,       /*!< I2C 每个字节读取时的非应答 */
-    I2C_MASTER_LAST_NACK = 0x2,   /*!< I2C 最后一个字节的非应答 */
-    I2C_MASTER_ACK_MAX,
-} i2c_ack_type_t;
-
-/**
- * @brief 时序配置结构体。用于内部 I2C 复位。
- */
-typedef struct {
-    int high_period; /*!< 高电平时间 */
-    int low_period; /*!< 低电平时间 */
-    int wait_high_period; /*!< 等待高电平时间 */
-    int rstart_setup; /*!< 重启设置时间 */
-    int start_hold; /*!< 启动保持时间 */
-    int stop_setup; /*!< 停止设置时间 */
-    int stop_hold; /*!< 停止保持时间 */
-    int sda_sample; /*!< SDA 采样时间 */
-    int sda_hold; /*!< SDA 保持时间 */
-    int timeout; /*!< 超时值 */
-} i2c_hal_timing_config_t;
-```
 ## IIC其他函数原型
 
-[其他IIC API函数](i2c_function.h)
+[IIC API函数](i2c_function.h)
+[IIC 类型定义](i2c_type.h)
 
 ## 应用示例项目
 [OLED12864显示](OLED12864_4PIN/OLED12864_4PIN_example.c)
+[MPU6050数据读取](MPU6050/main.c)
+
+## 常用IIC设备数据手册
+- [oled12864](/PDF/OLED12864.pdf)
+- [MPU6050](/PDF/MPU6050.pdf)
+- [VL53L0X](/PDF/VL53L0X.pdf)
+- [LM75](/PDF/LM75.pdf)

@@ -282,7 +282,7 @@ esp_err_t i2c_master_read_byte(i2c_cmd_handle_t cmd_handle, uint8_t *data, i2c_a
  * 调用`i2c_master_cmd_begin()`发送所有排队的命令
  *
  * @param cmd_handle I2C命令列表
- * @param data 接收到的字节将被存储的指针。该缓冲区应保持**有效**
+ * @param data 接收到的字节将被存储的指针。该缓冲区应保持**有效**  存储数据的数组
  * 直到交易完成。
  * @param data_len “数据”缓冲区的大小（以字节为单位）
  * @param ack ACK信号
