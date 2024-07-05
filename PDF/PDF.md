@@ -10,3 +10,9 @@
 - [ESP32-S3技术手册](/PDF/ESP32-S3.pdf)
 
 - [ESP32技术手册](/PDF/ESP32.pdf)
+
+## 常用IIC设备数据手册
+- [oled12864](/PDF/OLED12864.pdf)
+- [MPU6050](/PDF/MPU6050.pdf)
+- [VL53L0X](/PDF/VL53L0X.pdf)
+- [LM75](/PDF/LM75.pdf)
