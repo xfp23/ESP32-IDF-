@@ -106,7 +106,7 @@ mcpwm_timer_config_t mcpwm_config= {
     .group_id = 0,
     .clk_src = MCPWM_TIMER_CLK_SRC_DEFAULT,
     .resolution_hz = 100000, //时钟分频
-    .count_mode = MCPEM_TIMER_COUNT_MODE_UP,
+    .count_mode = MCPWM_TIMER_COUNT_MODE_UP,
     .period_ticks = 1000     // 1000 ticks, 1ms 定时器的周期
     .intr_priority = 0
 };
