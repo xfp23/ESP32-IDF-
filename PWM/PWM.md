@@ -251,3 +251,7 @@ uint32_t ledc_get_freq(ledc_mode_t speed_mode, ledc_timer_t timer_num);
 - PWM 频率为 5 kHz 时，占空比分辨率最大可为 13 位。
 - LED PWM 控制器可用于生成频率较高的信号，足以为数码相机模组等其他设备提供时钟。此时，最大频率可为 40 MHz，占空比分辨率为 1 位。也就是说，占空比固定为 50%，无法调整。
 - LED PWM 控制器 API 会在设定的频率和占空比分辨率超过 LED PWM 控制器硬件范围时报错。例如，试图将频率设置为 20 MHz、占空比分辨率设置为 3 位时
+
+# 完整代码例程
+
+- [pwm代码例程](example_ledc_pwm.c)

@@ -4,7 +4,7 @@
 
 © 2024 . 未经许可不得复制、修改或分发。 此文献为 [小風的藏書閣](https://t.me/xfp2333) 所有。
 
-# 电机控制脉宽调制器(MCPWM)
+# 电机控制脉宽调制器(MCPWM) (有待完善)
 
 # 简介
 
@@ -45,9 +45,6 @@
 - **添加以下头文件**
 ```c
 #include "driver/mcpwm_timer.h"
-#include "driver/mcpwm_types.h"
-#include "hal/mcpwm_types.h"
-#include "soc/clk_tree_defs.h"
 ```
 
 - **CMAKE配置**
@@ -109,7 +106,7 @@ mcpwm_timer_config_t mcpwm_config= {
     .group_id = 0,
     .clk_src = MCPWM_TIMER_CLK_SRC_DEFAULT,
     .resolution_hz = 100000, //时钟分频
-    .count_mode = MCPWM_TIMER_COUNT_MODE_UP,
+    .count_mode = MCPEM_TIMER_COUNT_MODE_UP,
     .period_ticks = 1000     // 1000 ticks, 1ms 定时器的周期
     .intr_priority = 0
 };
@@ -180,7 +177,7 @@ mcpwm_comparator_config_t comparator_config = {
  * @param 比较器配置结构
  * @param 比较器句柄
  */
-ESP_ERROR_CHECK(mcpwm_new_comparator(&mcpwm_operator_handle,&comparator_config，&mc_cmp)); //应用配置
+ESP_ERROR_CHECK(mcpwm_new_cmparator(&mcpwm_operator_handle,&comparator_config，&mc_cmp)); //应用配置
 ```
 
 ### MCPWM生成器
