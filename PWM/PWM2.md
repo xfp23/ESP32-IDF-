@@ -45,6 +45,9 @@
 - **添加以下头文件**
 ```c
 #include "driver/mcpwm_timer.h"
+#include "driver/mcpwm_types.h"
+#include "hal/mcpwm_types.h"
+#include "soc/clk_tree_defs.h"
 ```
 
 - **CMAKE配置**
