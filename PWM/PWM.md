@@ -27,6 +27,11 @@
 ```c
 #include "driver/ledc.h"
 ```
+
+2. CMAKE配置
+```c
+REQUIRES driver
+```
 ## 定时器配置
 
 - 要设置定时器，可调用函数 ledc_timer_config()，并将包括如下配置参数的数据结构 ***ledc_timer_config_t***
