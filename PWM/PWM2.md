@@ -180,7 +180,7 @@ mcpwm_comparator_config_t comparator_config = {
  * @param 比较器配置结构
  * @param 比较器句柄
  */
-ESP_ERROR_CHECK(mcpwm_new_cmparator(&mcpwm_operator_handle,&comparator_config，&mc_cmp)); //应用配置
+ESP_ERROR_CHECK(mcpwm_new_comparator(&mcpwm_operator_handle,&comparator_config，&mc_cmp)); //应用配置
 ```
 
 ### MCPWM生成器
