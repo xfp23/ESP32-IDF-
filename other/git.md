@@ -5,3 +5,6 @@ git add .
 git commit -m "add a folder"
 
 git pull origin main
+
+git push origin main
+
