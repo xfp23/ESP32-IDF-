@@ -245,3 +245,5 @@ uint8_t buf[20] = {0x20};
 uint8_t buffer[2];
 ESP_ERROR_CHECK(i2c_master_transmit_receive(i2c_bus_handle, buf, sizeof(buf), buffer, 2, -1));
  ```
+
+ [oled128644pin](oled128644pin.md)
