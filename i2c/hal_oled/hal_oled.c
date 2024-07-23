@@ -2,10 +2,9 @@
 #include "oled.h"
 #include "oled_font.h"
 
-// 全局变量，必须将这个句柄引入到总线配置中
-extern i2c_master_dev_handle_t OLED_handle;
+static i2c_master_dev_handle_t *OLED_handle;
 
-uint8_t OLED_GRAM[128][8]; // OLED缓存，用于保存画点状态
+static uint8_t OLED_GRAM[128][8];
 
 void oled_new_config(OLED_DEV *dev, i2c_master_dev_handle_t *handle) {
     dev->init = OLED_Init;
@@ -16,28 +15,28 @@ void oled_new_config(OLED_DEV *dev, i2c_master_dev_handle_t *handle) {
     dev->show_string = OLED_ShowString;
     dev->show_float = OLED_ShowFloat;
     dev->clear = OLED_Clear;
-    dev->handle = handle; // 将传入的handle赋值给结构体中的handle成员
+    dev->handle = handle;
 }
 
 void OLED_Init() {
     const uint8_t init_cmds[] = {
-        0xAE,       // Display off
-        0x00,       // Set lower column address
-        0x10,       // Set higher column address
-        0x40,       // Set start line address
-        0xB0,       // Set page address
-        0x81, 0xFF, // Contract control
-        0xA1,       // Set segment remap
-        0xA6,       // Normal / reverse display
-        0xA8, 0x3F, // Multiplex ratio
-        0xC8,       // Com scan direction
-        0xD3, 0x00, // Set display offset
-        0xD5, 0x80, // Set display clock divide ratio/oscillator frequency
-        0xD9, 0xF1, // Set pre-charge period
-        0xDA, 0x12, // Set com pins hardware configuration
-        0xDB, 0x40, // Set VCOMH Deselect Level
-        0x8D, 0x14, // Set DC-DC enable
-        0xAF        // Turn on OLED panel
+        0xAE,      
+        0x00,       
+        0x10,       
+        0x40,       
+        0xB0,     
+        0x81, 0xFF,
+        0xA1,     
+        0xA6,       
+        0xA8, 0x3F, 
+        0xC8,      
+        0xD3, 0x00,
+        0xD5, 0x80,
+        0xD9, 0xF1, 
+        0xDA, 0x12, 
+        0xDB, 0x40, 
+        0x8D, 0x14, 
+        0xAF        
     };
 
     for (uint8_t i = 0; i < sizeof(init_cmds); i++) {
@@ -60,7 +59,7 @@ void OLED_Clear(void) {
     for (uint8_t page = 0; page < 8; page++) {
         OLED_Set_Pos(0, page);
         for (uint8_t col = 0; col < 128; col++) {
-            OLED_WR_Byte(0x00, OLED_DATA); // Clear each column in the page
+            OLED_WR_Byte(0x00, OLED_DATA);
         }
     }
 }
@@ -107,8 +106,6 @@ uint32_t oled_pow(uint8_t m, uint8_t n) {
 void OLED_ShowNum(uint8_t x, uint8_t y, uint32_t num, font_size_t size2) {
     uint8_t len = 0;
     uint32_t temp = num;
-
-    // 计算数字的长度
     do {
         len++;
         temp /= 10;
@@ -117,7 +114,6 @@ void OLED_ShowNum(uint8_t x, uint8_t y, uint32_t num, font_size_t size2) {
     for (uint8_t t = 0; t < len; t++) {
         uint8_t digit = (num / oled_pow(10, len - t - 1)) % 10;
 
-        // 控制前导零
         if (t > 0 || digit > 0 || len == 1) {
             OLED_ShowChar(x + (size2 / 2) * t, y, digit + '0', size2);
         } else {
@@ -127,20 +123,18 @@ void OLED_ShowNum(uint8_t x, uint8_t y, uint32_t num, font_size_t size2) {
 }
 
 void OLED_ShowFloat(uint8_t x, uint8_t y, float num, font_size_t size2) {
-    // 把小数转换为字符串
+  
     char str[16];
-    snprintf(str, sizeof(str), "%.*f", 2, num); // 2是小数点后的位数
-
-    // 显示字符串
+    snprintf(str, sizeof(str), "%.*f", 2, num); 
     OLED_ShowString(x, y, str, size2);
 }
 
 void OLED_Set_Pos(uint8_t x, uint8_t y) {
-    if (y > 7) y = 7; // Ensure y is within bounds
+    if (y > 7) y = 7; 
 
-    OLED_WR_Byte(0xB0 + y, OLED_CMD);                    // Set page address
-    OLED_WR_Byte(((x & 0xF0) >> 4) | 0x10, OLED_CMD);    // Set column upper address
-    OLED_WR_Byte((x & 0x0F), OLED_CMD);                  // Set column lower address
+    OLED_WR_Byte(0xB0 + y, OLED_CMD);                   
+    OLED_WR_Byte(((x & 0xF0) >> 4) | 0x10, OLED_CMD); 
+    OLED_WR_Byte((x & 0x0F), OLED_CMD);    
 }
 
 void OLED_WriteData(uint8_t x, uint8_t y, uint8_t data) {
@@ -149,13 +143,13 @@ void OLED_WriteData(uint8_t x, uint8_t y, uint8_t data) {
 }
 
 void OLED_DrawPoint(uint8_t x, uint8_t y, Pixel_mode_t mode) {
-    uint8_t page = y / 8;  // 页地址
-    uint8_t bit = 1 << (y % 8);  // 对应位
+    uint8_t page = y / 8; 
+    uint8_t bit = 1 << (y % 8); 
 
     if (mode) {
-        OLED_GRAM[x][page] |= bit;  // 点亮
+        OLED_GRAM[x][page] |= bit;  
     } else {
-        OLED_GRAM[x][page] &= ~bit;  // 熄灭
+        OLED_GRAM[x][page] &= ~bit;
     }
 
     OLED_WriteData(x, page, OLED_GRAM[x][page]);
