@@ -7,7 +7,7 @@
 
 bool test_alarm_cb_t(gptimer_handle_t timer, const gptimer_alarm_event_data_t *edata, void *user_ctx)
 {
-    gpio_set_level(GPIO_NUM_19, !gpio_get_level(GPIO_NUM_19));
+    gpio_set_level(GPIO_NUM_1, !gpio_get_level(GPIO_NUM_1));
     return true;
 }
 
@@ -17,7 +17,7 @@ void led_init()
     io_config.mode = GPIO_MODE_INPUT_OUTPUT;
     io_config.pull_down_en = GPIO_PULLDOWN_DISABLE;
     io_config.pull_up_en = GPIO_PULLUP_DISABLE;
-    io_config.pin_bit_mask = 1ULL<<19;
+    io_config.pin_bit_mask = 1ULL<<1;
     gpio_config(&io_config);
 }
 
@@ -32,7 +32,7 @@ void timer_init()
     gptimer_new_timer(&config, &gptimer_handle);
     
     gptimer_alarm_config_t alarm_config = {
-        .alarm_count = 500000,
+        .alarm_count = 1000000,//一秒
         .reload_count = 0,
         .flags.auto_reload_on_alarm = true,
     };
