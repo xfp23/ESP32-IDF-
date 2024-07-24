@@ -11,7 +11,6 @@
 1. 所需头文件
 ```c
 #include "freertos/FreeRTOS.h"
-//可选,此部分为rtos依赖库
 #include "freertos/task.h"
 #include "driver/gpio.h"
 ```
