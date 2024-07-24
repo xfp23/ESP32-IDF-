@@ -150,6 +150,7 @@ ESP_ERROR_CHECK(uart_set_pin(UART_NUM_2, 4, UART_PIN_NO_CHANGE, UART_PIN_NO_CHAN
  * @param 串口号 0 1 2
  * @param UART RX环形缓冲区大小。
  * @param UART TX 环形缓冲区大小。如果设置为零，驱动程序将不使用 TX 缓冲区，TX 函数将阻止任务，直到所有数据都发送出去。
+ * @param UART 事件句柄队列大小 
  * @param UART 事件队列句柄地址，成功后，此处将编写一个新的队列句柄，以提供对 UART 事件的访问。如果设置为 NULL，驱动程序将不会使用事件队列。
  * @param 中断分配标志，一个或多个，请勿在此处设置 ESP_INTR_FLAG_IRAM（驱动程序的 ISR 处理程序不在 IRAM 中）
  * @return ESP调试信息
