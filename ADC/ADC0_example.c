@@ -1,63 +1,81 @@
 #include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
+#include <stdbool.h>
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
-#include "soc/soc_caps.h"
-#include "esp_log.h"
 #include "esp_adc/adc_oneshot.h"
+#include "esp_err.h"
+#include "esp_private/adc_private.h"
+#include "hal/adc_types.h"
+#include "hal/uart_types.h"
+#include "soc/clk_tree_defs.h"
+#include <unistd.h>
+#include "esp_log.h"
+#include "driver/uart.h"
+#include "string.h"
+#include "math.h"
 
-// 定义日志标签
-static const char *TAG = "ADC_EXAMPLE";
+#define UART_NUM 0
+#define TX_PIN 19
+#define RX_PIN 20
 
-// 定义ADC通道
-#define EXAMPLE_ADC1_CHAN0 ADC_CHANNEL_0
-#define EXAMPLE_ADC1_CHAN1 ADC_CHANNEL_3
-
+//句柄；
+adc_oneshot_unit_handle_t adc_handle;
+QueueHandle_t uart_handle;
+void init_one_adc();
+int adc_read();
+void init_uart();
+void print_adc_result(int);
 void app_main(void)
 {
-    // 定义变量存储ADC原始读取值
-    int adc_raw[2] = {0};
+	init_uart();
+	init_one_adc();
+	while(1)
+	{
+		print_adc_result(adc_read());
+		vTaskDelay(100);
+	}
+}
+void init_one_adc()
+{
+	adc_oneshot_unit_init_cfg_t adc_cfg = {
+		.unit_id = ADC_UNIT_1,
+		.clk_src = ADC_RTC_CLK_SRC_DEFAULT,
+		.ulp_mode = ADC_ULP_MODE_DISABLE,
+	};
+	ESP_ERROR_CHECK(adc_oneshot_new_unit(&adc_cfg, &adc_handle));
+	adc_oneshot_chan_cfg_t adc_chan_cfg = {
+		.atten = ADC_ATTEN_DB_0,
+		.bitwidth = ADC_BITWIDTH_12,
+	};
+	ESP_ERROR_CHECK(adc_oneshot_config_channel(adc_handle,ADC_CHANNEL_9, &adc_chan_cfg));
+	
+}
+void init_uart()
+{
+	uart_config_t uart_cfg = {
+		.baud_rate = 115200,
+		.data_bits = UART_DATA_8_BITS,
+		.parity = UART_PARITY_DISABLE,
+		.stop_bits = UART_STOP_BITS_1,
+		.flow_ctrl = UART_HW_FLOWCTRL_DISABLE,
+		.source_clk = UART_SCLK_APB,
+	};
+	ESP_ERROR_CHECK(uart_param_config(UART_NUM,&uart_cfg));
+	ESP_ERROR_CHECK(uart_set_pin(UART_NUM,TX_PIN, RX_PIN, UART_PIN_NO_CHANGE, UART_PIN_NO_CHANGE));
+	ESP_ERROR_CHECK(uart_driver_install(UART_NUM,1024, 1024,10, &uart_handle,0));
+}
+int adc_read()
+{
+	int result;
+	ESP_ERROR_CHECK(adc_oneshot_read(adc_handle,ADC_CHANNEL_9,&result));
+	result = (result * 3.3)/pow(2,12);
+	return result;
+}
 
-    // 初始化ADC单元实例
-    adc_oneshot_unit_handle_t adc1_handle;
-    adc_oneshot_unit_init_cfg_t init_config1 = {
-        .unit_id = ADC_UNIT_1,
-        .ulp_mode = ADC_ULP_MODE_DISABLE,
-    };
-    ESP_ERROR_CHECK(adc_oneshot_new_unit(&init_config1, &adc1_handle));
-
-    // 配置ADC通道
-    adc_oneshot_chan_cfg_t config = {
-        .bitwidth = ADC_BITWIDTH_DEFAULT,
-        .atten = ADC_ATTEN_DB_11,
-    };
-    ESP_ERROR_CHECK(adc_oneshot_config_channel(adc1_handle, EXAMPLE_ADC1_CHAN0, &config));
-    ESP_ERROR_CHECK(adc_oneshot_config_channel(adc1_handle, EXAMPLE_ADC1_CHAN1, &config));
-
-    // 持续读取ADC转换结果并打印
-    while (1) {
-        ESP_ERROR_CHECK(adc_oneshot_read(adc1_handle, EXAMPLE_ADC1_CHAN0, &adc_raw[0]));
-        ESP_LOGI(TAG, "ADC%d Channel[%d] Raw Data: %d", ADC_UNIT_1 + 1, EXAMPLE_ADC1_CHAN0, adc_raw[0]);
-
-        ESP_ERROR_CHECK(adc_oneshot_read(adc1_handle, EXAMPLE_ADC1_CHAN1, &adc_raw[1]));
-        ESP_LOGI(TAG, "ADC%d Channel[%d] Raw Data: %d", ADC_UNIT_1 + 1, EXAMPLE_ADC1_CHAN1, adc_raw[1]);
-
-        // 计算电压值
-        const float Vmax = 3.3;  // 假设最大测量电压为3.3V
-        const int Dmax = 4095;   // 对应12位位宽，2^12 - 1 = 4095
-
-        float voltage[2];
-        voltage[0] = adc_raw[0] * Vmax / Dmax;
-        voltage[1] = adc_raw[1] * Vmax / Dmax;
-
-        ESP_LOGI(TAG, "ADC%d Channel[%d] Voltage: %.2f V", ADC_UNIT_1 + 1, EXAMPLE_ADC1_CHAN0, voltage[0]);
-        ESP_LOGI(TAG, "ADC%d Channel[%d] Voltage: %.2f V", ADC_UNIT_1 + 1, EXAMPLE_ADC1_CHAN1, voltage[1]);
-
-        // 延时1秒
-        vTaskDelay(pdMS_TO_TICKS(1000)); // 延时1秒
-    }
-
-    // 回收ADC资源
-    ESP_ERROR_CHECK(adc_oneshot_del_unit(adc1_handle));
+void print_adc_result(int adc_value)
+{
+	char adc_print[20];
+	sprintf(adc_print,"adc_value: %d",adc_value);
+	uart_tx_chars(UART_NUM, adc_print, strlen(adc_print));
+	uart_flush(UART_NUM);
 }

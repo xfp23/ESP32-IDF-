@@ -102,29 +102,30 @@ ESP_ERROR_CHECK(adc_oneshot_del_unit(adc1_handle));
 - **EP32-S3 GPIO & 通道 对照表**：
 
 
+|--------------------------------------------------------|
 | 管脚名/信号名/GPIO | Sar_Mux | ADC 选择 (Sel)           |
 |--------------------|---------|-------------------------|
-| GPIO1              | 1       |                         |
-| GPIO2              | 2       |                         |
-| GPIO3              | 3       |                         |
-| GPIO4              | 4       |                         |
-| GPIO5              | 5       |                         |
-| GPIO6              | 6       | **Sel=0,选择SAR ADC1**  |
-| GPIO7              | 7       |                         |
-| GPIO8              | 8       |                         |
-| GPIO9              | 9       |                         |
-| GPIO10             | 10      |                         |
-|--------------------|---------|-------------------------|
-| GPIO11             | 1       |                         |
-| GPIO12             | 2       |                         |
-| GPIO13             | 3       |                         |
-| GPIO14             | 4       |                         |
-| GPIO15             | 5       |                         |
-| GPIO16             | 6       | **Sel=1,选择 SAR ADC2** |
-| GPIO17             | 7       |                         |
-| GPIO18             | 8       |                         |
-| GPIO19             | 9       |                         |
-| GPIO20             | 10      |                         |
+| GPIO1              | 0       |                         |
+| GPIO2              | 1       |                         |
+| GPIO3              | 2       |                         |
+| GPIO4              | 3       |                         |
+| GPIO5              | 4       |                         |
+| GPIO6              | 5       | **Sel=0,选择SAR ADC1**  |
+| GPIO7              | 6       |                         |
+| GPIO8              | 7       |                         |
+| GPIO9              | 8       |                         |
+| GPIO10             | 9       |                         |
+| -------------------|---------|-------------------------|
+| GPIO11             | 0       |                         |
+| GPIO12             | 1       |                         |
+| GPIO13             | 2       |                         |
+| GPIO14             | 3       |                         |
+| GPIO15             | 4       |                         |
+| GPIO16             | 5       | **Sel=1,选择 SAR ADC2** |
+| GPIO17             | 6       |                         |
+| GPIO18             | 7       |                         |
+| GPIO19             | 8       |                         |
+| GPIO20             | 9       |                         |
 |--------------------------------------------------------|
 
 - **ADC转换与衰减**
@@ -174,8 +175,8 @@ adc_oneshot_chan_cfg_t config = {
     .bitwidth = ADC_BITWIDTH_DEFAULT,
     .atten = ADC_ATTEN_DB_12,
 };
-ESP_ERROR_CHECK(adc_oneshot_config_channel(adc1_handle, EXAMPLE_ADC1_CHAN0, &config));
-ESP_ERROR_CHECK(adc_oneshot_config_channel(adc1_handle, EXAMPLE_ADC1_CHAN1, &config));
+ESP_ERROR_CHECK(adc_oneshot_config_channel(adc1_handle, ADC_CHANNEL_0, &config));
+ESP_ERROR_CHECK(adc_oneshot_config_channel(adc1_handle, ADC_CHANNEL_1, &config));
 ```
 
 # 读取转换结果
