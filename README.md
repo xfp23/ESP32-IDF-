@@ -14,6 +14,7 @@
 
 - [ADC连续转换编程指南](/ADC/ADC.md)
 - [ADC单次转换编程指南](/ADC/ADC0.md)
+- [ADC校准指南](/ADC/ADC_calibration.md)
 
 ## RTC
 - [通用定时器编程指南](/RTC/RTC.MD)
