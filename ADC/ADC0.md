@@ -4,274 +4,217 @@
 
 © 2024 . 未经许可不得复制、修改或分发。 此文献为 [小風的藏書閣](https://t.me/xfp2333) 所有。
 
-# 模数转换器 (ADC) 单次转换模式驱动
-- ESP32有两个 ADC 单元，可以在以下场景使用：
+# 模数转换器 (ADC) 单次转换模式驱动编程指南
 
-1. 生成 ADC 单次转换结果
+# 简介
 
-2. 生成连续 ADC 转换结果
+**模数转换器集成于芯片，支持测量特定模拟 IO 管脚的模拟信号。**
 
-3. 本指南介绍了 ADC 单次转换模式。
+- ESP32-S3 有 两 个 ADC 单元，可以在以下场景使用：
 
-- **ESP32的ADC（模数转换器）可以工作在单次转换模式和连续转换模式，它们之间的主要区别如下：**
+- 生成 ADC 单次转换结果
 
-***单次转换模式：***
+- 生成连续 ADC 转换结果
 
-- 在单次转换模式下，ADC执行一次转换后自动停止。这意味着你需要显式地触发每次转换，并且每次转换后ADC会进入休眠状态以节省能量。
-单次转换适合于需要在特定时间点测量并获取数据的应用场景，例如定时测量传感器数据或者事件驱动的数据采集。
-连续转换模式：
+本指南介绍了ADC单次转换模式，若想查看ADC连续转换，请[跳转此文档](ADC.md)
 
+# 环境配置
 
-# 编程实现
-
-## 环境配置
-
-- 所需头文件
+1. 包含头文件:
 ```c
-#include "esp_adc/adc_oneshot.h"
-#include "esp_adc/adc_cali.h"
-#include "esp_adc/adc_cali_scheme.h"
+#include "hal/adc_types.h"
 ```
-- cmake配置
+
+2. CMAKE配置：
+```c
+REQUIRES esp_adc
+```
+
+# 资源分配
+
+ADC 单次转换模式驱动基于 ESP32-S3 SAR ADC 模块实现，不同的 ESP 芯片可能拥有不同数量的独立 ADC。对于单次转换模式驱动而言，ADC 实例以 `adc_oneshot_unit_handle_t` 表示
+
+-  配置结构体 `adc_oneshot_unit_init_cfg_t`安装ADC实例
+
+1. 类型定义:
 
 ```c
- REQUIRES  esp_adc 
+
+//句柄类型:
+adc_oneshot_unit_handle_t;
+typedef struct {
+    adc_unit_t unit_id;             ///< ADC 单元
+    adc_oneshot_clk_src_t clk_src;  ///< 时钟源
+    adc_ulp_mode_t ulp_mode;        ///< 由 ULP 控制的 ADC，请参见 `adc_ulp_mode_t`
+} adc_oneshot_unit_init_cfg_t;
+
+//选择ADC单元:
+typedef enum {
+    ADC_UNIT_1,        ///< SAR ADC 1
+    ADC_UNIT_2,        ///< SAR ADC 2
+} adc_unit_t;
+
+//选择ADC时钟源:
+
+typedef soc_periph_adc_rtc_clk_src_t     adc_oneshot_clk_src_t;  
+typedef enum {
+    ADC_RTC_CLK_SRC_RC_FAST = SOC_MOD_CLK_RC_FAST,      /*!< 选择 RC_FAST 作为源时钟 */
+    ADC_RTC_CLK_SRC_DEFAULT = SOC_MOD_CLK_RC_FAST,      /*!< 选择 RC_FAST 作为默认时钟选择 */
+} soc_periph_adc_rtc_clk_src_t;
+
+//低功耗选择：
+typedef enum {
+    ADC_ULP_MODE_DISABLE = 0, ///< ADC ULP 模式禁用
+    ADC_ULP_MODE_FSM     = 1, ///< ADC 由 ULP FSM 控制 ULP FSM 可以在主 CPU 休眠时定期唤醒并执行一些预定义的任务，包括控制 ADC 进行数据采集。
+    ADC_ULP_MODE_RISCV   = 2, ///< ADC 由 ULP RISCV 控制 ADC 由 ULP RISCV 控制。ULP RISCV 是一个更强大的处理器，可以执行更复杂的任务，包括控制 ADC 进行数据采集和处理
+} adc_ulp_mode_t;
+
+
+//应用配置:
+
+esp_err_t adc_oneshot_new_unit(const adc_oneshot_unit_init_cfg_t *init_config, adc_oneshot_unit_handle_t *ret_unit);
 ```
-## 资源分配
 
-**ADC 单次转换模式驱动基于 ESP32 SAR ADC 模块实现，不同的 ESP 芯片可能拥有不同数量的独立 ADC。对于单次转换模式驱动而言，ADC 实例以 adc_oneshot_unit_handle_t 表示。**
+2. 示例代码:
 
-1. 资源分配示例：
 ```c
 adc_oneshot_unit_handle_t adc1_handle;
 adc_oneshot_unit_init_cfg_t init_config1 = {
     .unit_id = ADC_UNIT_1,
     .ulp_mode = ADC_ULP_MODE_DISABLE,
 };
-ESP_ERROR_CHECK(adc_oneshot_new_unit(&init_config1, &adc1_handle));//绑定句柄与结构
+ESP_ERROR_CHECK(adc_oneshot_new_unit(&init_config1, &adc1_handle));
 ```
 
-2. 回收ADC资源：
+# 回收ADC单元实例
+
 ```c
 ESP_ERROR_CHECK(adc_oneshot_del_unit(adc1_handle));
 ```
 
-## 配置ADC单元实例
+# 配置ADC单元实例
 
-- 配置两个ADC通道：
+- 创建 ADC 单元实例后，请设置 `adc_oneshot_chan_cfg_t` 配置 ADC IO 以测量模拟信号
+- 为使以上设置生效，请使用上述配置结构体调用 `adc_oneshot_config_channel()`，并指定要配置的 ADC 通道。函数 `adc_oneshot_config_channel()` 支持多次调用，以配置不同的 ADC 通道。驱动程序将在内部保存每个通道的配置。
+
+- 由于ADC相对复杂，此处提供了[部分知识点](ADC_POINT.md)
+
+- **EP32-S3 GPIO & 通道 对照表**：
+|--------------------------------------------------------|
+| 管脚名/信号名/GPIO | Sar_Mux | ADC 选择 (Sel)           |
+|--------------------|---------|-------------------------|
+| GPIO1              | 1       |                         |
+| GPIO2              | 2       |                         |
+| GPIO3              | 3       |                         |
+| GPIO4              | 4       |                         |
+| GPIO5              | 5       |                         |
+| GPIO6              | 6       | **Sel=0,选择SAR ADC1**  |
+| GPIO7              | 7       |                         |
+| GPIO8              | 8       |                         |
+| GPIO9              | 9       |                         |
+| GPIO10             | 10      |                         |
+| -------------------|---------|-------------------------|
+| GPIO11             | 1       |                         |
+| GPIO12             | 2       |                         |
+| GPIO13             | 3       |                         |
+| GPIO14             | 4       |                         |
+| GPIO15             | 5       |                         |
+| GPIO16             | 6       | **Sel=1,选择 SAR ADC2** |
+| GPIO17             | 7       |                         |
+| GPIO18             | 8       |                         |
+| GPIO19             | 9       |                         |
+| GPIO20             | 10      |                         |
+|--------------------------------------------------------|
+
+- **ADC转换与衰减**
+
+
+1. 配置类型声明:
 
 ```c
+typedef struct {
+    adc_atten_t atten;              ///< ADC 衰减
+    adc_bitwidth_t bitwidth;        ///< ADC 转换结果位数
+} adc_oneshot_chan_cfg_t;
+
+
+//选择ADC衰减信号
+typedef enum {
+    ADC_ATTEN_DB_0   = 0,  ///< 无输入衰减，ADC可以测量最高约为0 dB的输入电压
+    ADC_ATTEN_DB_2_5 = 1,  ///< 输入电压会被衰减，测量范围扩展约为2.5 dB
+    ADC_ATTEN_DB_6   = 2,  ///< 输入电压会被衰减，测量范围扩展约为6 dB
+    ADC_ATTEN_DB_12  = 3,  ///< 输入电压会被衰减，测量范围扩展约为12 dB
+    ADC_ATTEN_DB_11 __attribute__((deprecated)) = ADC_ATTEN_DB_12,  ///< 已弃用，与 `ADC_ATTEN_DB_12` 行为相同
+} adc_atten_t;
+
+//选择转换位数:
+typedef enum {
+    ADC_BITWIDTH_DEFAULT = 0, ///< 默认的 ADC 输出位宽，最大支持的位宽将被选择
+    ADC_BITWIDTH_9  = 9,      ///< ADC 输出位宽为 9 位
+    ADC_BITWIDTH_10 = 10,     ///< ADC 输出位宽为 10 位
+    ADC_BITWIDTH_11 = 11,     ///< ADC 输出位宽为 11 位
+    ADC_BITWIDTH_12 = 12,     ///< ADC 输出位宽为 12 位
+    ADC_BITWIDTH_13 = 13,     ///< ADC 输出位宽为 13 位
+} adc_bitwidth_t;
+
+/**
+* @brief 设置 ADC oneshot 模式所需的配置。
+* @param adc单次转换句柄
+* @param adc通道
+* @param adc配置单元结构地址
+* @return ESP调试信息
+*/
+esp_err_t adc_oneshot_config_channel(adc_oneshot_unit_handle_t handle, adc_channel_t channel, const adc_oneshot_chan_cfg_t *config);
+```
+
+2. 配置两个ADC通道：
+```c
 adc_oneshot_chan_cfg_t config = {
-    .bitwidth = ADC_BITWIDTH_DEFAULT,  // 使用默认的ADC位宽，通常为12位
-    .atten = ADC_ATTEN_DB_12,          // 设置衰减值为12 dB，对应的电压范围为0 ~ 3.6V
+    .bitwidth = ADC_BITWIDTH_DEFAULT,
+    .atten = ADC_ATTEN_DB_12,
 };
 ESP_ERROR_CHECK(adc_oneshot_config_channel(adc1_handle, EXAMPLE_ADC1_CHAN0, &config));
 ESP_ERROR_CHECK(adc_oneshot_config_channel(adc1_handle, EXAMPLE_ADC1_CHAN1, &config));
-
 ```
 
+# 读取转换结果
 
-## 读取ADC转换结果
-
+- 调用 `adc_oneshot_read()` 可以获取 ADC 通道的原始转换结果
+1. 通过该函数获取的 ADC 转换结果为原始数据。可以使用以下公式，根据 ADC 原始结果计算电压：
 ```c
-/**
-* adc_raw: 数组用于存储ADC转换后的原始数据。
-* adc_oneshot_read: 函数用于读取指定通道的ADC转换结果。它将ADC转换后的原始数据存储在提供的指针变量中。
-* ESP_ERROR_CHECK: 这个宏用于检查函数返回的错误码并处理错误。如果读取操作失败，将会记录错误信息。
+ Vout = Dout * Vmax / Dmax 
+ ```
+| 符号     | 说明                                                                                                             |
+|----------|------------------------------------------------------------------------------------------------------------------|
+| Vout     | **数字输出结果，代表电压**                                                                                       |
+| Dout输出 | ADC 原始数字读取结果                                                                                            |
+| Vmax     | 可测量的最大模拟输入电压，与 ADC 衰减无关。请参考 [技术手册->片上传感器与模拟信号处理](PDF/ESP32-S3.pdf)         |
+| Dmax     | 输出 ADC 原始数字读取结果的最大值，即 \(2^{\text{位宽}}\)，位宽即之前配置的 `adc_digi_pattern_config_t::bit_width` |
+
+ 2. 函数原型:
+ ```c
+ /**
+ * @brief 读取ADC转换
+ * @param adc单次转换句柄
+ * @param 要读取的adc通道
+ * @param 存放结果的整数地址
+ * @return ESP调试信息 
  */
-int adc_raw[2];
-ESP_ERROR_CHECK(adc_oneshot_read(adc1_handle, EXAMPLE_ADC1_CHAN0, &adc_raw[0]));
-ESP_LOGI(TAG, "ADC%d Channel[%d] Raw Data: %d", ADC_UNIT_1 + 1, EXAMPLE_ADC1_CHAN0, adc_raw[0]);
+esp_err_t adc_oneshot_read(adc_oneshot_unit_handle_t handle, adc_channel_t chan, int *out_raw);
 
-ESP_ERROR_CHECK(adc_oneshot_read(adc1_handle, EXAMPLE_ADC1_CHAN1, &adc_raw[1]));
-ESP_LOGI(TAG, "ADC%d Channel[%d] Raw Data: %d", ADC_UNIT_1 + 1, EXAMPLE_ADC1_CHAN1, adc_raw[1]);
+ ```
+ 3. 若需进一步校准，将 ADC 原始结果转换为以 mV 为单位的电压数据，[ADC校准指南](ADC_calibration.md)。
 
-```
+ 4. 代码示例:
+ ```c
+ESP_ERROR_CHECK(adc_oneshot_read(adc1_handle, EXAMPLE_ADC1_CHAN0, &adc_raw[0][0]));
+ESP_LOGI(TAG, "ADC%d Channel[%d] Raw Data: %d", ADC_UNIT_1 + 1, EXAMPLE_ADC1_CHAN0, adc_raw[0][0]);
 
-- 通过该函数获取的 ADC 转换结果为原始数据。可以使用以下公式，根据 ADC 原始结果计算电压：
-```c
-
-/**
-*@brief 参数说明:
-*Vout数字输出结果，代表电压。
-*Vmax 可测量的最大模拟输入电压，与 ADC 衰减相关
-*Dmax 输出 ADC 原始数字读取结果的最大值，即 2^位宽，位宽即之前配置的 adc_digi_pattern_config_t::bit_width
-*/
-Vout = Dout * Vmax / Dmax       (1)
-
-```
-
-## 相关类型定义
-
-```c
-/**
- * @brief ADC单元
- */
-typedef enum {
-    ADC_UNIT_1,        ///< SAR ADC 1
-    ADC_UNIT_2,        ///< SAR ADC 2
-} adc_unit_t;
-
-/**
- * @brief ADC通道
- */
-typedef enum {
-    ADC_CHANNEL_0,     ///< ADC通道0
-    ADC_CHANNEL_1,     ///< ADC通道1
-    ADC_CHANNEL_2,     ///< ADC通道2
-    ADC_CHANNEL_3,     ///< ADC通道3
-    ADC_CHANNEL_4,     ///< ADC通道4
-    ADC_CHANNEL_5,     ///< ADC通道5
-    ADC_CHANNEL_6,     ///< ADC通道6
-    ADC_CHANNEL_7,     ///< ADC通道7
-    ADC_CHANNEL_8,     ///< ADC通道8
-    ADC_CHANNEL_9,     ///< ADC通道9
-} adc_channel_t;
-
-/**
- * @brief ADC衰减参数。不同参数决定了ADC的测量范围。
- */
-typedef enum {
-    ADC_ATTEN_DB_0   = 0,  ///< 无输入衰减，ADC可测量到约
-    ADC_ATTEN_DB_2_5 = 1,  ///< ADC的输入电压将被衰减，测量范围扩展约2.5 dB (1.33倍)
-    ADC_ATTEN_DB_6   = 2,  ///< ADC的输入电压将被衰减，测量范围扩展约6 dB (2倍)
-    ADC_ATTEN_DB_11  = 3,  ///< ADC的输入电压将被衰减，测量范围扩展约11 dB (3.55倍)
-} adc_atten_t;
-
-typedef enum {
-    ADC_BITWIDTH_DEFAULT = 0, ///< 默认ADC输出位宽，将选择支持的最大位宽
-    ADC_BITWIDTH_9  = 9,      ///< ADC输出位宽为9位
-    ADC_BITWIDTH_10 = 10,     ///< ADC输出位宽为10位
-    ADC_BITWIDTH_11 = 11,     ///< ADC输出位宽为11位
-    ADC_BITWIDTH_12 = 12,     ///< ADC输出位宽为12位
-    ADC_BITWIDTH_13 = 13,     ///< ADC输出位宽为13位
-} adc_bitwidth_t;
-
-typedef enum {
-    ADC_ULP_MODE_DISABLE = 0, ///< 禁用ADC ULP模式
-    ADC_ULP_MODE_FSM     = 1, ///< ADC由ULP FSM控制
-    ADC_ULP_MODE_RISCV   = 2, ///< ADC由ULP RISCV控制
-} adc_ulp_mode_t;
-
-/**
- * @brief ADC数字控制器(DMA模式)工作模式。
- */
-typedef enum {
-    ADC_CONV_SINGLE_UNIT_1 = 1,  ///< 仅使用ADC1进行转换
-    ADC_CONV_SINGLE_UNIT_2 = 2,  ///< 仅使用ADC2进行转换
-    ADC_CONV_BOTH_UNIT     = 3,  ///< 同时使用ADC1和ADC2进行转换
-    ADC_CONV_ALTER_UNIT    = 7,  ///< 轮流使用ADC1和ADC2进行转换。例如：ADC1 -> ADC2 -> ADC1 -> ADC2 .....
-} adc_digi_convert_mode_t;
-
-/**
- * @brief ADC数字控制器(DMA模式)输出数据格式选项。
- */
-typedef enum {
-    ADC_DIGI_OUTPUT_FORMAT_TYPE1,   ///< 参见 `adc_digi_output_data_t.type1`
-    ADC_DIGI_OUTPUT_FORMAT_TYPE2,   ///< 参见 `adc_digi_output_data_t.type2`
-} adc_digi_output_format_t;
-
-#if SOC_ADC_DIG_CTRL_SUPPORTED && !SOC_ADC_RTC_CTRL_SUPPORTED
-typedef soc_periph_adc_digi_clk_src_t    adc_oneshot_clk_src_t;     ///< 数字控制器单次模式的时钟源类型
-typedef soc_periph_adc_digi_clk_src_t    adc_continuous_clk_src_t;  ///< 数字控制器连续模式的时钟源类型
-#elif SOC_ADC_RTC_CTRL_SUPPORTED
-typedef soc_periph_adc_rtc_clk_src_t     adc_oneshot_clk_src_t;     ///< RTC控制器单次模式的时钟源类型
-typedef soc_periph_adc_digi_clk_src_t    adc_continuous_clk_src_t;  ///< 数字控制器连续模式的时钟源类型
-#endif
-
-/**
- * @brief ADC数字控制器模式配置
- */
-typedef struct {
-    uint8_t atten;      ///< 此ADC通道的衰减
-    uint8_t channel;    ///< ADC通道
-    uint8_t unit;       ///< ADC单元
-    uint8_t bit_width;  ///< ADC输出位宽
-} adc_digi_pattern_config_t;
-
-/**
- * @brief ADC IIR滤波器ID
- */
-typedef enum {
-    ADC_DIGI_IIR_FILTER_0,  ///< 滤波器0
-    ADC_DIGI_IIR_FILTER_1,  ///< 滤波器1
-} adc_digi_iir_filter_t;
-
-/**
- * @brief IIR滤波器系数
- */
-typedef enum {
-    ADC_DIGI_IIR_FILTER_COEFF_2,     ///< 滤波系数为2
-    ADC_DIGI_IIR_FILTER_COEFF_4,     ///< 滤波系数为4
-    ADC_DIGI_IIR_FILTER_COEFF_8,     ///< 滤波系数为8
-    ADC_DIGI_IIR_FILTER_COEFF_16,    ///< 滤波系数为16
-    ADC_DIGI_IIR_FILTER_COEFF_64,    ///< 滤波系数为64
-} adc_digi_iir_filter_coeff_t;
-
-```
-
-## 上述部分函数原型
-
-```c
-/**
- * @brief 配置单次ADC读取的通道
- *
- * @param[in] handle      ADC句柄
- * @param[in] channel     ADC通道号
- * @param[in] config      ADC通道的配置结构体
- *
- * @return
- *     - ESP_OK: 成功
- *     - 其他: 发生错误
- */
-esp_err_t adc_oneshot_config_channel(adc_oneshot_handle_t handle, adc_channel_t channel, const adc_oneshot_config_t *config);
+ESP_ERROR_CHECK(adc_oneshot_read(adc1_handle, EXAMPLE_ADC1_CHAN1, &adc_raw[0][1]));
+ESP_LOGI(TAG, "ADC%d Channel[%d] Raw Data: %d", ADC_UNIT_1 + 1, EXAMPLE_ADC1_CHAN1, adc_raw[0][1]);
+ ```
 
 
-/**
- * @brief 读取指定通道的单次ADC转换结果
- *
- * @param[in] handle      ADC句柄
- * @param[in] channel     ADC通道号
- * @param[out] out_raw    指向存储ADC转换结果的指针
- *
- * @return
- *     - ESP_OK: 成功
- *     - 其他: 发生错误
- */
-esp_err_t adc_oneshot_read(adc_oneshot_handle_t handle, adc_channel_t channel, int *out_raw);
+=======================================================================================================
 
-/**
- * @brief 检查并处理错误码
- *
- * @param[in] expr        表达式，通常是函数调用
- *
- * @note 如果表达式返回值不为ESP_OK，会打印错误信息并中止程序
- */
-#define ESP_ERROR_CHECK(expr) do {                                         \
-        esp_err_t err_rc_ = (expr);                                        \
-        if (err_rc_ != ESP_OK) {                                           \
-            ESP_LOGE(TAG, "ESP_ERROR_CHECK failed: esp_err_t 0x%x at %s:%d", \
-                     err_rc_, __FILE__, __LINE__);                         \
-            abort();                                                       \
-        }                                                                  \
-    } while(0)
-
-
-/**
- * @brief 打印信息日志
- *
- * @param[in] tag         日志标签，用于标识日志所属模块
- * @param[in] format      格式字符串，类似printf
- * @param[in] ...         格式化参数
- */
-#define ESP_LOGI(tag, format, ...) esp_log_write(ESP_LOG_INFO, tag, format, ##__VA_ARGS__)
-
-
-
-```
-## 单次转换使用示例
-
-[ADC单次转换示例](ADC0_example.c)
-
-- 若想了解**ADC连续转换**,请查看如下指南
-[ADC连续转换](ADC.md)
+[ADC单次转换使用示例](/ADC/ADC0_example.c)

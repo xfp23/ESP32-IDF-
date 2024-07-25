@@ -6,8 +6,6 @@
 #include "soc/soc_caps.h"
 #include "esp_log.h"
 #include "esp_adc/adc_oneshot.h"
-#include "esp_adc/adc_cali.h"
-#include "esp_adc/adc_cali_scheme.h"
 
 // 定义日志标签
 static const char *TAG = "ADC_EXAMPLE";
