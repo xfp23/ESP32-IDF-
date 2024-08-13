@@ -7,7 +7,8 @@
 # ESP32部分系列技术手册
 - [ESP32-C3技术手册](/PDF/ESP32-C3.pdf)
 
-- [ESP32-S3技术手册](/PDF/ESP32-S3.pdf)
+- [ESP32-S3数据手册](/PDF/esp32-s3_datasheet_cn.pdf)
+- [ESP32-S3技术参考手册](/PDF/esp32-s3_technical_reference_manual_cn.pdf)
 
 - [ESP32技术手册](/PDF/ESP32.pdf)
 

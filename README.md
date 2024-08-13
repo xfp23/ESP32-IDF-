@@ -16,7 +16,7 @@
 - [ADC单次转换编程指南](/ADC/ADC0.md)
 - [ADC校准指南](/ADC/ADC_calibration.md)
 
-## RTC
+## Timer
 - [通用定时器编程指南](/RTC/RTC.MD)
 
 ## PWM
@@ -38,7 +38,8 @@
 
 ## BLETooth
 
-- [蓝牙编程指南](/BLE/BLE.md)
+- [经典蓝牙编程指南](/BLE/BLE.md)
+- [低功耗蓝牙编程指南](/BLE/BLE_low.md)
 
 ## 相关资料
 - [ESP32技术手册](/PDF/PDF.md)
