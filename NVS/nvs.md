@@ -107,3 +107,259 @@ REQUIRES nvs_flash
     }
     ESP_ERROR_CHECK(err);
 ```
+
+2. 打开nvs分区
+
+- 数据类型:
+
+```c
+//句柄类型:
+typedef uint32_t nvs_handle_t;
+
+typedef enum {
+	NVS_READONLY,  /*!< 只读 */
+	NVS_READWRITE  /*!< 读写 */
+} nvs_open_mode_t;
+
+esp_err_t nvs_open(const char* namespace_name, nvs_open_mode_t open_mode, nvs_handle_t *out_handle)
+```
+
+***打开nvs分区后，使用绑定的句柄操作***
+
+- 代码示例:
+
+```c
+err = nvs_open("storage", NVS_READWRITE, &my_handle);
+```
+
+3. 读:
+
+```c
+/**
+ * @brief 从 NVS（非易失性存储器）中获取一个 `int32_t` 类型的值
+ *
+ * 这个函数用于从指定的命名空间中获取与键（key）相关联的 `int32_t` 类型的值，并将其存储到 `out_value` 指针指向的变量中。
+ *
+ * @param c_handle nvs_handle_t 类型的句柄，表示已经打开的命名空间。
+ * @param key      表示要获取的键值的名称（字符串），它必须是一个以空字符结尾的字符串（最多15个字符）。
+ * @param out_value 指向 `int32_t` 类型变量的指针，用于存储从 NVS 中获取的值。
+ *
+ * @return
+ *     - ESP_OK: 表示成功获取到值并存储在 `out_value` 中。
+ *     - ESP_ERR_NVS_NOT_FOUND: 表示指定的键在 NVS 中不存在。
+ *     - ESP_ERR_NVS_INVALID_HANDLE: 表示传入的句柄无效（例如句柄已关闭或为 NULL）。
+ *     - ESP_ERR_NVS_INVALID_NAME: 表示键名不符合 NVS 规范（例如长度超过允许的最大值）。
+ *     - ESP_ERR_NVS_INVALID_LENGTH: 表示数据长度不匹配（在这里应该不会发生，因为此函数专门获取 `int32_t` 类型的值）。
+ *     - 其他错误代码：表示在读取过程中可能发生的其他错误（如 NVS 未初始化、类型不匹配等）。
+ *
+ * @note 在调用此函数之前，必须确保已通过 `nvs_open` 成功打开了命名空间，并获得了有效的句柄。
+ * @note 键值必须事先通过 `nvs_set_i32` 或其他适当的 `nvs_set_*` 函数存储在 NVS 中。
+ */
+
+esp_err_t nvs_get_i32 (nvs_handle_t c_handle, const char* key, int32_t* out_value)
+
+```
+
+- 使用示例:
+
+```c
+int32_t restart_counter = 0;// 如果尚未在 NVS 中設置，則值將預設為 0
+nvs_get_i32(my_handle, "restart_counter", &restart_counter);
+```
+
+4. 写:
+
+- 类型：
+
+```c
+
+/**
+ * @brief 将一个 32 位整数值存储到 NVS 中
+ *
+ * 这个函数用于将指定的 32 位整数值 (`int32_t`) 存储到给定的键值对中。
+ * 需要使用 `nvs_handle_t` 类型的句柄来指定命名空间，并使用一个键名来
+ * 标识所存储的值。如果键已经存在，则会覆盖旧值。
+ *
+ * @param handle 已打开的 NVS 句柄，用于指定操作的命名空间。
+ * @param key 用于标识存储值的键名，必须是一个以空字符结尾的字符串。
+ * @param value 要存储的 `int32_t` 类型的整数值。
+ *
+ * @return
+ *      - ESP_OK: 成功将值存储到 NVS 中。
+ *      - ESP_ERR_NVS_INVALID_HANDLE: 句柄无效，可能未正确打开。
+ *      - ESP_ERR_NVS_READ_ONLY: 命名空间是只读的，无法进行写入操作。
+ *      - ESP_ERR_NVS_INVALID_NAME: 提供的键名无效，可能是空指针或太长。
+ *      - ESP_ERR_NVS_INVALID_LENGTH: 数据长度不符合要求。
+ *      - ESP_ERR_NVS_NOT_ENOUGH_SPACE: NVS 分区空间不足，无法存储新值。
+ *      - ESP_ERR_NVS_REMOVE_FAILED: 删除现有值失败（若值已存在且需要覆盖）。
+ *      - ESP_ERR_NVS_VALUE_TOO_LONG: 值的长度超出了 NVS 的限制。
+ *      - ESP_ERR_NVS_NOT_FOUND: 没有找到所请求的条目（一般不会发生在 `nvs_set` 中）。
+ *      - ESP_ERR_NVS_INTERNAL: NVS 内部发生了其他错误。
+ */
+esp_err_t nvs_set_i32(nvs_handle_t handle, const char* key, int32_t value);
+
+/**
+ * @brief 将已修改的 NVS 数据写入闪存
+ *
+ * 该函数用于将之前通过 `nvs_set_*` 系列函数设置的键值对，真正地写入到闪存中。
+ * 在调用 `nvs_commit` 之前，数据只是保存在 RAM 中。调用此函数后，数据才会
+ * 永久保存到 NVS 分区的闪存中。
+ *
+ * 如果在设置完键值对后未调用此函数，所做的更改将不会持久化，
+ * 在设备重启后这些更改会丢失。
+ *
+ * @param c_handle 已打开的 NVS 句柄，用于指定操作的命名空间。
+ *
+ * @return
+ *      - ESP_OK: 成功将数据写入闪存。
+ *      - ESP_ERR_NVS_INVALID_HANDLE: 句柄无效，可能未正确打开。
+ *      - ESP_ERR_NVS_NOT_INITIALIZED: NVS 库未初始化。
+ *      - ESP_ERR_NVS_PART_NOT_FOUND: 未找到对应的 NVS 分区。
+ *      - ESP_ERR_NVS_NOT_ENOUGH_SPACE: 闪存空间不足，无法将数据持久化。
+ *      - ESP_ERR_NVS_INTERNAL: NVS 内部发生了其他错误。
+ */
+esp_err_t nvs_commit(nvs_handle_t c_handle);
+
+```
+
+- 代码示例:
+
+```c
+    err = nvs_set_i32(my_handle, "restart_counter", restart_counter);
+    // 提交写入的值。
+    // 设置任何值后，必须调用 nvs_commit() 以确保更改已写入
+    // 到闪存存储。实现可能会在其他时间写入存储，
+    // 但这不保证一定会发生。
+    err = nvs_commit(my_handle);
+```
+
+5. 关闭
+
+- 当所有读写完毕后，确保关闭打开的nvs分区
+
+```c
+ nvs_close(my_handle);
+
+```
+## 存入读取多数据
+
+- 函数原型:
+```c
+
+/**
+ * @brief 从 NVS 读取 Blob 数据
+ *
+ * @param c_handle 打开的 NVS 句柄，通过 `nvs_open` 函数获取。
+ * @param key 数据项的键名，用于标识要读取的 Blob 数据。
+ * @param out_value 指向用于存储读取数据的缓冲区的指针。如果该缓冲区为空，则仅返回 Blob 数据的大小。
+ * @param length 指向 `size_t` 类型的指针，用于传递和接收 Blob 数据的大小。在调用时，它应指向存储 Blob 数据的缓冲区的大小；在返回时，它将包含实际读取的 Blob 数据的大小。
+ *
+ * @return
+ * - `ESP_OK`：成功读取数据。
+ * - `ESP_ERR_NVS_NOT_FOUND`：未找到指定键的数据。
+ * - `ESP_ERR_NVS_INVALID_LENGTH`：提供的缓冲区大小不足以存储 Blob 数据。
+ * - 其他错误码：读取过程中发生其他错误。
+ *
+ * @note
+ * - 如果 `out_value` 为 `NULL`，`length` 将返回所需的 Blob 数据大小。
+ * - 在读取之前，`length` 应初始化为 0，以便正确返回所需的大小。
+ */
+esp_err_t nvs_get_blob(nvs_handle_t c_handle, const char* key, void* out_value, size_t* length);
+
+/**
+ * @brief 向 NVS 写入 Blob 数据
+ *
+ * @param c_handle 打开的 NVS 句柄，通过 `nvs_open` 函数获取。
+ * @param key 数据项的键名，用于标识要存储的 Blob 数据。
+ * @param value 指向要存储的 Blob 数据的指针。
+ * @param length Blob 数据的大小（以字节为单位）。
+ *
+ * @return
+ * - `ESP_OK`：成功写入数据。
+ * - `ESP_ERR_NVS_NO_FREE_PAGES`：NVS 分区没有足够的空间来存储数据。
+ * - `ESP_ERR_NVS_NOT_ENOUGH_SPACE`：提供的 Blob 数据大小超出了可用空间。
+ * - 其他错误码：写入过程中发生其他错误。
+ *
+ * @note
+ * - 写入操作不会自动提交更改。要确保数据写入到闪存，必须调用 `nvs_commit`。
+ */
+esp_err_t nvs_set_blob(nvs_handle_t c_handle, const char* key, const void* value, size_t length);
+
+
+```
+- 使用示例:
+
+```c
+esp_err_t save_run_time(void)
+{
+    nvs_handle_t my_handle;
+    esp_err_t err;
+
+    // 打开 NVS 句柄
+    err = nvs_open(STORAGE_NAMESPACE, NVS_READWRITE, &my_handle);
+    if (err != ESP_OK) return err;
+
+    // 读取 Blob 所需的内存大小
+    size_t required_size = 0;  // 如果之前未设置，则默认值为 0
+    err = nvs_get_blob(my_handle, "run_time", NULL, &required_size); //此处获取大小存储于required_size中
+    if (err != ESP_OK && err != ESP_ERR_NVS_NOT_FOUND) return err;
+
+    // 如果有可用的 Blob，则读取之前保存的 Blob
+    uint32_t* run_time = malloc(required_size + sizeof(uint32_t));
+    if (required_size > 0) {
+        err = nvs_get_blob(my_handle, "run_time", run_time, &required_size);
+        if (err != ESP_OK) {
+            free(run_time);
+            return err;
+        }
+    }
+
+    // 将新值写入 Blob，包括之前保存的 Blob（如果有）
+    required_size += sizeof(uint32_t);
+    run_time[required_size / sizeof(uint32_t) - 1] = xTaskGetTickCount() * portTICK_PERIOD_MS;
+    err = nvs_set_blob(my_handle, "run_time", run_time, required_size);
+    free(run_time);
+
+    if (err != ESP_OK) return err;
+
+    // 提交更改
+    err = nvs_commit(my_handle);
+    if (err != ESP_OK) return err;
+
+    // 关闭 NVS 句柄
+    nvs_close(my_handle);
+    return ESP_OK;
+}
+```
+
+
+# 扩展函数提供:
+
+```c
+
+//写函数:
+extern "C" esp_err_t nvs_set_i8  (nvs_handle_t handle, const char* key, int8_t value);
+extern "C" esp_err_t nvs_set_u8  (nvs_handle_t handle, const char* key, uint8_t value);
+extern "C" esp_err_t nvs_set_i16 (nvs_handle_t handle, const char* key, int16_t value);
+extern "C" esp_err_t nvs_set_u16 (nvs_handle_t handle, const char* key, uint16_t value);
+extern "C" esp_err_t nvs_set_i32 (nvs_handle_t handle, const char* key, int32_t value);
+extern "C" esp_err_t nvs_set_u32 (nvs_handle_t handle, const char* key, uint32_t value);
+extern "C" esp_err_t nvs_set_i64 (nvs_handle_t handle, const char* key, int64_t value);
+extern "C" esp_err_t nvs_set_u64 (nvs_handle_t handle, const char* key, uint64_t value);
+
+//读函数:
+extern "C" esp_err_t nvs_get_i8  (nvs_handle_t c_handle, const char* key, int8_t* out_value);
+extern "C" esp_err_t nvs_get_u8  (nvs_handle_t c_handle, const char* key, uint8_t* out_value);
+extern "C" esp_err_t nvs_get_i16 (nvs_handle_t c_handle, const char* key, int16_t* out_value);
+extern "C" esp_err_t nvs_get_u16 (nvs_handle_t c_handle, const char* key, uint16_t* out_value);
+extern "C" esp_err_t nvs_get_i32 (nvs_handle_t c_handle, const char* key, int32_t* out_value);
+extern "C" esp_err_t nvs_get_u32 (nvs_handle_t c_handle, const char* key, uint32_t* out_value);
+extern "C" esp_err_t nvs_get_i64 (nvs_handle_t c_handle, const char* key, int64_t* out_value);
+extern "C" esp_err_t nvs_get_u64 (nvs_handle_t c_handle, const char* key, uint64_t* out_value);
+
+```
+
+# 代码示例
+
+- [单值写入读取示例](nvs_onevalue.c)
+- [大空间内容读写示例](nvs_oblovalue.c)
