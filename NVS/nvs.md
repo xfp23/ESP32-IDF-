@@ -47,6 +47,7 @@ REQUIRES nvs_flash
 
 ```c
 
+#include "nvs_flash.h"
 #include "nvs.h"
 
 ```

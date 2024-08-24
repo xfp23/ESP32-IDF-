@@ -47,5 +47,6 @@
 
 # SmartConfig
 - [SmartConfig配网指南](SmartConfig/SmartConfig.md)
+
 ## 相关资料
 - [ESP32技术手册](/PDF/PDF.md)
