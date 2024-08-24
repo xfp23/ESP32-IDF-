@@ -42,7 +42,7 @@
 - [蓝牙编程指南](/BLE/BLE_low.md)
 
 ## NVS(非易失性存储)
-- [NVS变成指南](/NVS/nvs.md)
+- [NVS编程指南](/NVS/nvs.md)
 
 # SmartConfig
 - [SmartConfig配网指南](SmartConfig/SmartConfig.md)
