@@ -2,7 +2,7 @@
 
 # 版权信息
 
-© 2024 . 未经许可不得复制、修改或分发。 此文献为 [小風的藏書閣](https://t.me/xfp2333) 所有。
+© 2024 . 未经许可不得复制、修改或分发。 此文献为 **DXG工作室**  所有。
 
 # 简介
 - [spi知识点](spi_aknownladge.md)
@@ -328,15 +328,14 @@ esp_err_t SPI_MASTER_ISR_ATTR spi_device_polling_transmit(spi_device_handle_t ha
 
 ```c
 
-// 阻塞式发送:
 uint8_t cmd;//假如这是要发送的数据
 spi_transaction_t t;
-meset(&t,0,sizeof(t)); //这一步也可以不要，就是要一个个配置成员，这样设置好处是后续只需要把需要配置的成员在赋值就好了
+meset(&t,0,sizeof(t));
 
 t.length = 8; //要发送的数据长度，以位为单位，八位也就是一字节
 t.tx_buffer = &cmd;//要发送的内容的缓冲区地址
 t.rx_buffer = NULL; //接受数据的缓冲区地址
-t.user = (void *)0;
+t.user = (void *)0; //此处用来回调函数获取DC指令
 t.flags = SPI_TRANS_CS_KEEP_ACTIVE;
 spi_device_polling_transmit(dev_handle,&t);
 ```
@@ -370,3 +369,6 @@ spi_device_polling_transmit(dev_handle,&t);
 void SPI_MASTER_ISR_ATTR spi_device_release_bus(spi_device_t *dev);
 ```
 
+# 示例
+
+- [SPI驱动TFT屏幕](SPITFT.c)

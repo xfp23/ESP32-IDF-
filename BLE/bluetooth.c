@@ -535,3 +535,13 @@ void example_write_event_env(esp_gatt_if_t gatts_if, prepare_type_env_t *prepare
         }
     }
 }
+
+void app_main()
+{
+    init_bluetooth();
+    while (1)
+    {
+        DELAY_MS(1000);
+    }
+    
+}

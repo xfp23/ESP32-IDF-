@@ -4,7 +4,7 @@
 
 # 版权信息
 
-© 2024 . 未经许可不得复制、修改或分发。 此文献为 [小風的藏書閣](https://t.me/xfp2333) 所有。
+© 2024 . 未经许可不得复制、修改或分发。 此文献为 **DXG工作室** 所有。
 
 ## GPIO
 
@@ -32,14 +32,19 @@
 
 ## SPI
 - [SPI编程指南](/spi/spi.md)
+
 ## WIFI
 
 - [WIFI编程指南](/WIFI/wifi.md)
 
+
 ## BLETooth
+- [蓝牙编程指南](/BLE/BLE_low.md)
 
-- [经典蓝牙编程指南](/BLE/BLE.md)
-- [低功耗蓝牙编程指南](/BLE/BLE_low.md)
+## NVS(非易失性存储)
+- [NVS变成指南](/NVS/nvs.md)
 
+# SmartConfig
+- [SmartConfig配网指南](SmartConfig/SmartConfig.md)
 ## 相关资料
 - [ESP32技术手册](/PDF/PDF.md)
