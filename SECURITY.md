@@ -1,24 +1,20 @@
-# Security Policy
+# 安全策略
 
-## Supported Versions
+## 支持的版本
 
-Use this section to tell people about which versions of your project are
-currently being supported with security updates.
+在此部分告知用户当前哪些版本的项目仍然提供安全更新支持。
 
-| Version | Supported          |
+| 版本   | 支持情况              |
 | ------- | ------------------ |
 | 5.2.2   | :white_check_mark: |
 | 5.0.x   | :x:                |
 | 4.0.x   | :x:                |
 | < 4.0   | :x:                |
 
-## Reporting a Vulnerability
+## 漏洞报告
 
-Use this section to tell people how to report a vulnerability.
+在此部分告知用户如何报告漏洞。
 
-Tell them where to go, how often they can expect to get an update on a
-reported vulnerability, what to expect if the vulnerability is accepted or
-declined, etc.
+告知他们在哪里报告漏洞，预计多久可以收到漏洞报告的更新，以及如果漏洞被接受或拒绝后会发生什么等信息。
 
-You can report a vulnerability by sending an email to [xfp57064@gmail.com](mailto:xfp57064@gmail.com).
-
+你可以通过发送电子邮件至 [xfp57064@gmail.com](mailto:xfp57064@gmail.com) 来报告漏洞。
