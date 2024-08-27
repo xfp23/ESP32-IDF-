@@ -8,6 +8,27 @@
 
 - ESP-IDF 并没有直接提供处理JSON格式的方法,本文档使用[CJSONK库](https://github.com/DaveGamble/cJSON.git)处理JSON数据
 
+- 以下JSON数据是本教程的示例模板，同时也展示了JSON格式
+
+```json
+{
+    "name": "John",
+    "age": 30,
+    "height": 5.9,
+    "is_student": false,
+    "hobbies": ["reading", "gaming", "cycling"],
+    "scores": [85, 90, 78]
+}
+
+{
+    "name": "John",
+    "age": 30,
+    "is_student": false,
+    "scores": [85, 90, 78]
+}
+
+```
+
 # 环境准备
 
 1. 下载CJSON库，查看简介处
