@@ -351,3 +351,4 @@ Vout = Dout * Vmax / Dmax
 - 若需进一步校准，将 ADC 原始结果转换为以 mV 为单位的电压数据,[ADC校准指南](ADC_calibration.md)。
 ## 函数原型
 - [上述函数原型](/ADC/ADC_Functions.c)
+- [ADC连续转换示例](adc_con.c)
