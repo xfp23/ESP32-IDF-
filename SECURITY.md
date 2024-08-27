@@ -20,4 +20,5 @@ Tell them where to go, how often they can expect to get an update on a
 reported vulnerability, what to expect if the vulnerability is accepted or
 declined, etc.
 
-[反馈邮箱](xfp57064@gmail.com)
+You can report a vulnerability by sending an email to [xfp57064@gmail.com](mailto:xfp57064@gmail.com).
+
