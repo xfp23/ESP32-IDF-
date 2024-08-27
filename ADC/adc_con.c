@@ -10,17 +10,27 @@ adc_continuous_handle_t conti_handle;
 int adc_num;                    // 缓冲区大小
 int result1 = 0, result2 = 0;          
 uint8_t* adc_val;               // 缓冲区
-
 bool adc_callback(adc_continuous_handle_t handle, const adc_continuous_evt_data_t* edata, void* user_data) {
-    adc_num = edata->size;                                          // 获取缓冲区的大小
-    adc_val = edata->conv_frame_buffer;                             // 获取转换结果
-    if (adc_num == 8) {                                             // 将转换结果(4个byte)合成一个int
-        result1 = (((uint16_t)adc_val[1] & 0x0F) << 8) | adc_val[0];   // 12-bit 数据，高4位清零
-        result2 = (((uint16_t)adc_val[5] & 0x0F) << 8) | adc_val[4];   //根据选取的位宽处理
+    adc_num = edata->size;  // 获取缓冲区的大小，此值应为通道数乘以4（每通道4字节）
+    adc_val = edata->conv_frame_buffer;  // 获取转换结果缓冲区的指针
+
+    if (adc_num == 8) {  // 确保数据缓冲区的大小为8字节，即两个通道的结果 每个转换结果站4字节  sizeof(int)
+        // 从ADC数据中提取12位结果（每个通道4字节）
+        // 对于12位数据，高4位是无效的，需要清零
+        result1 = (((uint16_t)adc_val[1] & 0x0F) << 8) | adc_val[0];  // 处理第一个通道的数据
+        result2 = (((uint16_t)adc_val[5] & 0x0F) << 8) | adc_val[4];  // 处理第二个通道的数据
+        
+        // 处理12位数据时：
+        // - adc_val[0] 和 adc_val[1] 组成第一个通道的结果
+        // - adc_val[4] 和 adc_val[5] 组成第二个通道的结果
+        // 如果使用16位数据格式，可以直接将两个字节合并，不需要清零高4位
+        // 如果使用32位数据格式，可能需要处理额外的字节
+
         return true;
     }
     return false;
 }
+
 
 void adc_init(void) {
     adc_continuous_handle_cfg_t conti_initer = {
