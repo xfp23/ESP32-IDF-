@@ -8,52 +8,57 @@
 
 ## GPIO
 
-- [GPIO编程指南](/GPIO/GPIO.md)
+- [GPIO编程指南](./GPIO/GPIO.md)
 
 ## ADC
 
-- [ADC连续转换编程指南](/ADC/ADC.md)
-- [ADC单次转换编程指南](/ADC/ADC0.md)
-- [ADC校准指南](/ADC/ADC_calibration.md)
+- [ADC连续转换编程指南](./ADC/ADC.md)
+- [ADC单次转换编程指南](./ADC/ADC0.md)
+- [ADC校准指南](./ADC/ADC_calibration.md)
 
 ## Timer
-- [通用定时器编程指南](/RTC/RTC.MD)
+- [通用定时器编程指南](./RTC/RTC.MD)
 
 ## PWM
-- [LED PWM编程指南](/PWM/PWM.md)
-- [MC PWM编程指南](/PWM/PWM2.md)
+- [LED PWM编程指南](./PWM/PWM.md)
+- [MC PWM编程指南](./PWM/PWM2.md)
 
 ## UART
-- [UART编程指南](/uart/uart.md)
+- [UART编程指南](./uart/uart.md)
 ## I2C
 
-- [I2C主机编程指南](/i2c/I2C.md)
-- [I2C从机编程指南](/i2c/I2C0.md)
+- [I2C主机编程指南](./i2c/I2C.md)
+- [I2C从机编程指南](./i2c/I2C0.md)
 
 ## SPI
-- [SPI编程指南](/spi/spi.md)
+- [SPI编程指南](./spi/spi.md)
+
+## I2S
+
+- [I2S编程指南](./I2S/I2S.md)
 
 ## WIFI
 
-- [WIFI编程指南](/WIFI/wifi.md)
+- [WIFI编程指南](./WIFI/wifi.md)
 
 
 ## BLETooth
-- [蓝牙编程指南](/BLE/BLE_low.md)
+- [蓝牙编程指南](./BLE/BLE_low.md)
 
 ## NVS(非易失性存储)
 
-- [NVS编程指南](/NVS/nvs.md)
+- [NVS编程指南](./NVS/nvs.md)
 
-# SmartConfig
-- [SmartConfig配网指南](SmartConfig/SmartConfig.md)
+## SmartConfig
 
-# MQTT
+- [SmartConfig配网指南](./SmartConfig/SmartConfig.md)
 
-- [MQTT编程指南](MQTT/mqtt_main.md)
+## MQTT
 
-# Json
+- [MQTT编程指南](./MQTT/mqtt_main.md)
 
-- [json数据处理](Json/json.md)
+## Json
+
+- [json数据处理](./Json/json.md)
 ## 相关资料
-- [ESP32技术手册](/PDF/PDF.md)
+- [ESP32技术手册](./PDF/PDF.md)

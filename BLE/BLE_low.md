@@ -41,12 +41,8 @@ GATT（Generic Attribute Profile）是蓝牙低功耗（BLE）的一种协议，
 #include <stdio.h>                   // 标准输入输出函数
 #include <stdlib.h>                  // 标准库函数
 #include <string.h>                  // 字符串处理函数
-#include "freertos/FreeRTOS.h"       // FreeRTOS 支持
-#include "freertos/task.h"           // FreeRTOS 任务管理
 #include "esp_system.h"              // ESP32 系统相关函数
-#include "esp_log.h"                 // 日志记录功能
 #include "nvs_flash.h"               // 非易失性存储功能
-#include "driver/gpio.h"             // GPIO 驱动
 #include "esp_gap_ble_api.h"         // BLE GAP API
 #include "esp_gatts_api.h"           // GATT API
 #include "esp_bt_defs.h"             // 蓝牙定义
@@ -61,7 +57,7 @@ GATT（Generic Attribute Profile）是蓝牙低功耗（BLE）的一种协议，
 ```c
 #define GATTS_SERVICE_UUID_TEST_A   0x00FF       // 服务 UUID
 #define GATTS_CHAR_UUID_TEST_A      0xFF01       // 特征 UUID
-define GATTS_DESCR_UUID_TEST_A     0x3333       // 描述符 UUID
+#define GATTS_DESCR_UUID_TEST_A     0x3333       // 描述符 UUID
 #define GATTS_NUM_HANDLE_TEST_A     4            // 句柄数量
 #define GATTS_DEMO_CHAR_VAL_LEN_MAX 0x40         // 特征值最大长度
 #define TEST_DEVICE_NAME            "pxf-ESP32"  // 设备名称
